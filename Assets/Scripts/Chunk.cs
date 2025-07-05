@@ -12,6 +12,9 @@ public class Chunk : MonoBehaviour
     private MeshRenderer meshRenderer;
     private MeshCollider collider;
 
+    public Material atlasMaterial;
+    public int atlasGridSize, atlasResolution;
+
     void Start()
     {
         meshFilter = gameObject.AddComponent<MeshFilter>();
@@ -38,7 +41,7 @@ public class Chunk : MonoBehaviour
 
     public void GenerateMesh()
     {
-        Dictionary<Material, MeshData> meshDataMap = new();
+        MeshData meshData = new();
 
         for (int x = 0; x < chunkSize.x; x++)
             for (int y = 0; y < chunkSize.y; y++)
@@ -46,10 +49,6 @@ public class Chunk : MonoBehaviour
                 {
                     var block = blocks[x, y, z];
                     if (block.type == Block.Type.Air) continue;
-
-                    var material = block.material;
-                    if (!meshDataMap.ContainsKey(material))
-                        meshDataMap[material] = new();
 
                     Vector3 pos = new(x, y, z);
 
@@ -68,44 +67,25 @@ public class Chunk : MonoBehaviour
                         // Render face corresponding to this side of the block only if it is at the edge of the chunk or next to air (visible face)
                         if (nx < 0 || ny < 0 || nz < 0 || nx >= chunkSize.x || ny >= chunkSize.y || nz >= chunkSize.z || blocks[nx, ny, nz].type == Block.Type.Air)
                         {
-                            VoxelFaceGenerator.AddFace(meshDataMap[material], pos, dir);
+                            VoxelFaceGenerator.AddFace(meshData, pos, dir, block.textureOffset, atlasGridSize, atlasResolution);
                         }
                     }
                 }
 
-        List<CombineInstance> combineInstances = new();
-        List<Material> materials = new();
-
-        foreach (var kvp in meshDataMap)
+        Mesh mesh = new()
         {
-            if (kvp.Value.vertices.Count == 0) continue;
-
-            Mesh mesh = new()
-            {
-                vertices = kvp.Value.vertices.ToArray(),
-                triangles = kvp.Value.triangles.ToArray()
-            };
-            mesh.RecalculateNormals();
-
-            CombineInstance ci = new()
-            {
-                mesh = mesh,
-                transform = Matrix4x4.identity
-            };
-            combineInstances.Add(ci);
-
-            materials.Add(kvp.Key);
-        }
-
-        Mesh finalMesh = new();
-        finalMesh.CombineMeshes(combineInstances.ToArray(), false, false);
+            vertices = meshData.vertices.ToArray(),
+            triangles = meshData.triangles.ToArray(),
+            uv = meshData.uvs.ToArray()
+        };
 
         meshFilter.mesh = null;
-        meshFilter.mesh = finalMesh;
-        meshRenderer.materials = materials.ToArray();
+        meshFilter.mesh = mesh;
+
+        meshRenderer.material = atlasMaterial;
 
         collider.sharedMesh = null;
-        collider.sharedMesh = finalMesh;
+        collider.sharedMesh = mesh;
     }
 }
 
@@ -121,15 +101,13 @@ public static class VoxelFaceGenerator
         { new Vector3(0,0,0), new Vector3(0,0,1), new Vector3(0,1,1), new Vector3(0,1,0) }
     };
 
-    public static void AddFace(MeshData meshData, Vector3 pos, Vector3Int normal)
+    public static void AddFace(MeshData meshData, Vector3 pos, Vector3Int normal, Vector2Int[] atlasOffsets, int atlasGridSize, int atlasResolution)
     {
         int index = meshData.vertices.Count;
         int dir = GetFaceIndex(normal);
 
         for (int i = 0; i < 4; i++)
-        {
             meshData.vertices.Add(pos + faceVertices[dir, i]);
-        }
 
         meshData.triangles.Add(index);
         meshData.triangles.Add(index + 1);
@@ -137,6 +115,28 @@ public static class VoxelFaceGenerator
         meshData.triangles.Add(index);
         meshData.triangles.Add(index + 2);
         meshData.triangles.Add(index + 3);
+
+        Vector2[] faceUVs = GetUVs(atlasOffsets[dir], atlasGridSize, atlasResolution);
+        meshData.uvs.AddRange(faceUVs);
+    }
+
+    private static Vector2[] GetUVs(Vector2Int atlasOffset, int atlasGridSize, int atlasResolution)
+    {
+        float padding = 2f / atlasResolution;
+
+        float tileSize = 1f / atlasGridSize;
+        float paddedTileSize = tileSize - padding * 2;
+
+        float xMin = atlasOffset.x * tileSize + padding;
+        float yMin = atlasOffset.y * tileSize + padding;
+
+        return new Vector2[]
+        {
+            new(xMin + paddedTileSize, yMin),
+            new(xMin, yMin),
+            new(xMin, yMin + paddedTileSize),
+            new(xMin + paddedTileSize, yMin + paddedTileSize)
+        };
     }
 
     private static int GetFaceIndex(Vector3Int normal)
@@ -155,4 +155,5 @@ public class MeshData
 {
     public List<Vector3> vertices = new();
     public List<int> triangles = new();
+    public List<Vector2> uvs = new();
 }

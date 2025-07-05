@@ -10,7 +10,14 @@ public class Block
 
 	public Vector3Int worldPos;
 	public Type type;
-	public Material material;
+	public Vector2Int[] textureOffset;
+
+	static readonly Dictionary<Type, Vector2Int[]> defaultTextureOffsets = new()
+	{
+		{ Type.Stone, new Vector2Int[] { new(0, 0), new(1, 0), new(2, 0), new(3, 0), new(4, 0), new(5, 0) } },
+		{ Type.PowerSource, new Vector2Int[] { new(0, 1), new(0, 1), new(0, 1), new(0, 1), new(0, 1), new(0, 1) } },
+		{ Type.Wire, new Vector2Int[] { new(1, 1), new(1, 1), new(1, 1), new(1, 1), new(1, 1), new(1, 1) } }
+    };
 
 	public Block(Chunk chunk, Vector3Int worldPos, Type type)
 	{
@@ -24,6 +31,6 @@ public class Block
 		this.type = type;
 
 		if (type != Type.Air)
-			material = BlockMaterialStore.defaultMaterials[type];
+			textureOffset = defaultTextureOffsets[type];
 	}
 }

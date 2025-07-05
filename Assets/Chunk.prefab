@@ -44,6 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ba20d8fb5a0645d382a0a49df964cd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  grassMaterial: {fileID: 2100000, guid: 81b92052c8d8c4fdd85ab78a16ae9d2d, type: 2}
-  dirtMaterial: {fileID: 2100000, guid: 517de159248b04775ba6517579d5780a, type: 2}
-  stoneMaterial: {fileID: 2100000, guid: b36dd6c2531064b5496b3515ee9dd0ed, type: 2}
+  world: {fileID: 0}
+  atlasMaterial: {fileID: 2100000, guid: c1ebf5114cf7543aca4a0a44aa23a08d, type: 2}
+  atlasGridSize: 8
+  atlasResolution: 512
