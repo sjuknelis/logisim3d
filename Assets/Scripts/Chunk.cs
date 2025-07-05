@@ -31,8 +31,10 @@ public class Chunk : MonoBehaviour
         {
             var type = (y > chunkSize.y / 2) ? Block.Type.Air : Block.Type.Stone;
             for (int x = 0; x < chunkSize.x; x++)
-                for (int z = 0; z < chunkSize.z; z++)
+                for (int z = 0; z < chunkSize.z; z++) {
                     blocks[x, y, z] = new(this, chunkOrigin + new Vector3Int(x, y, z), type);
+                    
+                }
         }
     }
 

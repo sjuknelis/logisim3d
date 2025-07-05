@@ -90,8 +90,96 @@ public class World : MonoBehaviour
 
         if (!GetBlock(worldPos, out var block, out var chunk)) return;
         block.Set(blockType);
+        
+
+        int[] deltax = { 0, 0, -1, 1, 0, 0 };
+        int[] deltay = { 0, 0, 0, 0, 1, -1 };
+        int[] deltaz = { -1, 1, 0, 0, 0, 0 };
+        HashSet<Chunk> rerender = new HashSet<Chunk>();
+        
+
+        if (blockType == Block.Type.PowerSource) {
+            HashSet<Vector3Int> visited = new HashSet<Vector3Int>();
+            Queue<Vector3Int> to_check = new Queue<Vector3Int>();
+            to_check.Enqueue(block.worldPos);
+            visited.Add(block.worldPos);
+            while (to_check.Count != 0) {
+                Vector3Int top = to_check.Dequeue();
+
+                for (int i = 0; i < 6; i++) {
+                    if (!GetBlock(new(top.x+deltax[i], top.y+deltay[i], top.z+deltaz[i]), out var checking, out var chunk2)) continue;
+                    if (visited.Contains(checking.worldPos)) continue;
+                    
+
+                    if (checking.type == Block.Type.Wire) {
+                        checking.powered = true; 
+                        checking.Set(checking.type); // move later
+                        Debug.Log(checking);
+                        checking.sources.Add(block.worldPos);
+                        rerender.Add(chunk2);
+                        to_check.Enqueue(checking.worldPos);
+                        visited.Add(checking.worldPos);
+                    }
+                }
+            }
+
+        } else if (blockType == Block.Type.Wire) {
+            // if any powered wire is adjacent, this is powered too
+            for (int i = 0; i < 6; i++) {
+                if (!GetBlock(new(worldPos.x + deltax[i], worldPos.y + deltay[i], worldPos.z + deltaz[i]), out var checking, out var chunk2)) continue;
+                if (checking.type == Block.Type.Wire && checking.powered) {
+                    block.powered = true; 
+                    block.Set(block.type); // move later
+                    foreach (Vector3Int src in checking.sources) {
+                        block.sources.Add(src);
+                    }
+                    rerender.Add(chunk2);
+                } else if (checking.type == Block.Type.PowerSource) {
+                    block.powered = true;
+                    block.Set(block.type); // move later
+                    block.sources.Add(checking.worldPos);
+                }
+                // when it propagates it needs to pass on all its sources
+            }
+
+            if (block.powered) { // THIS ISN'T RIGHT YET (revisits where a wire got powered from)
+                Debug.Log("Yes");
+                foreach (Vector3Int src in block.sources) {
+                    HashSet<Vector3Int> visited = new HashSet<Vector3Int>();
+                    Queue<Vector3Int> to_check = new Queue<Vector3Int>();
+                    to_check.Enqueue(block.worldPos);
+                    visited.Add(block.worldPos);
+
+                    while (to_check.Count != 0) {
+                        Vector3Int top = to_check.Dequeue();
+
+                        for (int i = 0; i < 6; i++) {
+                            if (!GetBlock(new(top.x+deltax[i], top.y+deltay[i], top.z+deltaz[i]), out var checking, out var chunk2)) continue;
+                            if (visited.Contains(checking.worldPos)) continue;
+                            
+                            if (checking.type == Block.Type.Wire) {
+                                checking.powered = true;
+                                checking.Set(checking.type); // move later
+                                checking.sources.Add(src);
+                                Debug.Log(checking.sources);
+                                rerender.Add(chunk2);
+                                to_check.Enqueue(checking.worldPos);
+                                visited.Add(checking.worldPos);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         chunk.GenerateMesh();
+        foreach (Chunk chunkToRerender in rerender) {
+            chunkToRerender.GenerateMesh();
+        }
+        
     }
+
+
 
     bool InBounds(Vector3Int chunkIndex)
     {
