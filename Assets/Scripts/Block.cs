@@ -31,6 +31,6 @@ public class Block
 		this.type = type;
 
 		if (type != Type.Air)
-			textureOffset = defaultTextureOffsets[type];
+			textureOffset = BlockProps.textureOffsets[BlockProps.names[type]];
 	}
 }

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class World : MonoBehaviour
@@ -12,8 +10,6 @@ public class World : MonoBehaviour
 
     void Start()
     {
-        BlockMaterialStore.LoadMaterials();
-
         // Create chunks
         for (int x = 0; x < worldSize.x; x++)
             for (int y = 0; y < worldSize.y; y++)
@@ -97,34 +93,5 @@ public class World : MonoBehaviour
     {
         return chunkIndex.x >= 0 && chunkIndex.y >= 0 && chunkIndex.z >= 0 &&
             chunkIndex.x < worldSize.x && chunkIndex.y < worldSize.y && chunkIndex.z < worldSize.z;
-    }
-}
-
-public static class BlockMaterialStore
-{
-    private static readonly string[] materialNames =
-    {
-        "stone",
-        "powersource",
-        "wire",
-        "poweredwire"
-    };
-    private static readonly Dictionary<Block.Type, string> defaultMaterialNames = new()
-    {
-        { Block.Type.Stone, "stone" },
-        { Block.Type.PowerSource, "powersource" },
-        { Block.Type.Wire, "wire" }
-    };
-
-    public static Dictionary<string, Material> materials = new();
-    public static Dictionary<Block.Type, Material> defaultMaterials = new();
-
-    public static void LoadMaterials()
-    {
-        foreach (var name in materialNames)
-            materials[name] = (Material)AssetDatabase.LoadAssetAtPath("Assets/Materials/" + name + ".mat", typeof(Material));
-
-        foreach (var kvp in defaultMaterialNames)
-            defaultMaterials[kvp.Key] = materials[kvp.Value];
     }
 }
