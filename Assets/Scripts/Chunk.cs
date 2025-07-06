@@ -32,7 +32,7 @@ public class Chunk : MonoBehaviour
         // Half air half stone chunk
         for (int y = 0; y < chunkSize.y; y++)
         {
-            var type = (y > chunkSize.y / 2) ? Block.Type.Air : Block.Type.Stone;
+            var type = (y >= 16) ? Block.Type.Air : Block.Type.Stone;
             for (int x = 0; x < chunkSize.x; x++)
                 for (int z = 0; z < chunkSize.z; z++)
                     blocks[x, y, z] = new(this, chunkOrigin + new Vector3Int(x, y, z), type);
@@ -50,24 +50,20 @@ public class Chunk : MonoBehaviour
                     var block = blocks[x, y, z];
                     if (block.type == Block.Type.Air) continue;
 
-                    Vector3 pos = new(x, y, z);
+                    Vector3Int chunkPos = new(x, y, z);
 
-                    Vector3Int[] directions = {
-                        new Vector3Int(0, 1, 0), new Vector3Int(0, -1, 0),
-                        new Vector3Int(0, 0, 1), new Vector3Int(0, 0, -1),
-                        new Vector3Int(1, 0, 0), new Vector3Int(-1, 0, 0)
-                    };
-
-                    foreach (var dir in directions)
+                    foreach (var dir in DirectionUtils.allDirs)
                     {
-                        int nx = x + dir.x;
-                        int ny = y + dir.y;
-                        int nz = z + dir.z;
+                        var nextPos = chunkPos + dir.GetNormal();
 
-                        // Render face corresponding to this side of the block only if it is at the edge of the chunk or next to air (visible face)
-                        if (nx < 0 || ny < 0 || nz < 0 || nx >= chunkSize.x || ny >= chunkSize.y || nz >= chunkSize.z || blocks[nx, ny, nz].type == Block.Type.Air)
+                        // Render face corresponding to this side of the block only if it is at the edge of the chunk or nextPos to air (visible face)
+                        if (
+                            nextPos.x < 0 || nextPos.y < 0 || nextPos.z < 0 ||
+                            nextPos.x >= chunkSize.x || nextPos.y >= chunkSize.y || nextPos.z >= chunkSize.z ||
+                            blocks[nextPos.x, nextPos.y, nextPos.z].type == Block.Type.Air
+                            )
                         {
-                            VoxelFaceGenerator.AddFace(meshData, block, dir, atlasGridSize, atlasResolution);
+                            VoxelFaceGenerator.AddFace(meshData, chunkPos, block, dir, atlasGridSize, atlasResolution);
                         }
                     }
                 }
@@ -89,32 +85,27 @@ public class Chunk : MonoBehaviour
     }
 }
 
-public static class VoxelFaceGenerator
+static class VoxelFaceGenerator
 {
     static readonly Vector3[,] faceVertices = new Vector3[,]
     {
-        { new Vector3(0,0,1), new Vector3(1,0,1), new Vector3(1,1,1), new Vector3(0,1,1) }, // forward
-        { new Vector3(1,0,1), new Vector3(1,0,0), new Vector3(1,1,0), new Vector3(1,1,1) }, // right
-        { new Vector3(1,0,0), new Vector3(0,0,0), new Vector3(0,1,0), new Vector3(1,1,0) }, // back
-        { new Vector3(0,0,0), new Vector3(0,0,1), new Vector3(0,1,1), new Vector3(0,1,0) }, // left
-        { new Vector3(0,1,0), new Vector3(0,1,1), new Vector3(1,1,1), new Vector3(1,1,0) }, // up
-        { new Vector3(0,0,0), new Vector3(1,0,0), new Vector3(1,0,1), new Vector3(0,0,1) }  // down
+        { new(0,0,1), new(1,0,1), new(1,1,1), new(0,1,1) }, // forward
+        { new(1,0,1), new(1,0,0), new(1,1,0), new(1,1,1) }, // right
+        { new(1,0,0), new(0,0,0), new(0,1,0), new(1,1,0) }, // back
+        { new(0,0,0), new(0,0,1), new(0,1,1), new(0,1,0) }, // left
+        { new(0,1,0), new(0,1,1), new(1,1,1), new(1,1,0) }, // up
+        { new(0,0,0), new(1,0,0), new(1,0,1), new(0,0,1) }  // down
     };
 
-    static int mod(int x, int m)
+    public static void AddFace(MeshData meshData, Vector3Int chunkPos, Block block, Direction dir, int atlasGridSize, int atlasResolution)
     {
-        return (x % m + m) % m;
-    }
-
-    public static void AddFace(MeshData meshData, Block block, Vector3Int normal, int atlasGridSize, int atlasResolution)
-    {
-        int realFaceIndex = GetFaceIndex(normal);
-        int projectedFaceIndex = block.orientation.ProjectFaceIndex(realFaceIndex);
+        int worldFaceIndex = dir.GetFaceIndex();
+        int blockFaceIndex = block.orientation.Project(dir).GetFaceIndex();
 
         int index = meshData.vertices.Count;
 
         for (int i = 0; i < 4; i++)
-            meshData.vertices.Add(block.worldPos + faceVertices[realFaceIndex, i]);
+            meshData.vertices.Add(chunkPos + faceVertices[worldFaceIndex, i]);
 
         meshData.triangles.Add(index);
         meshData.triangles.Add(index + 1);
@@ -123,17 +114,19 @@ public static class VoxelFaceGenerator
         meshData.triangles.Add(index + 2);
         meshData.triangles.Add(index + 3);
 
+        // Determine how to rotate top and bottom faces according to rotation
+        // Idk why these are the offsets
         int rotations = 0;
-        if (realFaceIndex == 4)
-            rotations = mod(block.orientation.forwardIndex + 1, 4);
-        else if (realFaceIndex == 5)
-            rotations = mod(-block.orientation.forwardIndex, 4);
+        if (dir == Direction.Up)
+            rotations = (block.orientation.forwardIndex + 1) % 4;
+        else if (dir == Direction.Down)
+            rotations = 4 - block.orientation.forwardIndex;
 
-        Vector2[] faceUVs = GetUVs(block.textureOffsets[projectedFaceIndex], rotations, atlasGridSize, atlasResolution);
+        var faceUVs = GetUVs(block.textureOffsets[blockFaceIndex], rotations, atlasGridSize, atlasResolution);
         meshData.uvs.AddRange(faceUVs);
     }
 
-    private static Vector2[] GetUVs(Vector2Int atlasOffset, int rotations, int atlasGridSize, int atlasResolution)
+    static Vector2[] GetUVs(Vector2Int atlasOffset, int rotations, int atlasGridSize, int atlasResolution)
     {
         float padding = 2f / atlasResolution;
 
@@ -157,20 +150,9 @@ public static class VoxelFaceGenerator
 
         return rotatedUVs;
     }
-
-    private static int GetFaceIndex(Vector3Int normal)
-    {
-        if (normal == Vector3Int.forward) return 0;
-        if (normal == Vector3Int.right) return 1;
-        if (normal == Vector3Int.back) return 2;
-        if (normal == Vector3Int.left) return 3;
-        if (normal == Vector3Int.up) return 4;
-        if (normal == Vector3Int.down) return 5;
-        return 0;
-    }
 }
 
-public class MeshData
+class MeshData
 {
     public List<Vector3> vertices = new();
     public List<int> triangles = new();

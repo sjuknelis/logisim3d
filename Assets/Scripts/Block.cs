@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Block
 {
@@ -45,20 +44,14 @@ public class BlockOrientation
 		forwardIndex = 0;
 	}
 
-	public int ProjectFaceIndex(int index)
+	public Direction Project(Direction dir)
 	{
-		if (index < 4)
-		{
-			return (index + forwardIndex) % 4;
-		}
-		else if (upSign == 1)
-		{
-			return index;
-		}
+		if (dir == Direction.Up)
+			return upSign == 1 ? Direction.Up : Direction.Down;
+		else if (dir == Direction.Down)
+            return upSign == 1 ? Direction.Down : Direction.Up;
 		else
-		{
-			return 9 - index;
-		}
+			return DirectionUtils.FromFaceIndex((dir.GetFaceIndex() + forwardIndex) % 4);
 	}
 
 	public void Rotate()
