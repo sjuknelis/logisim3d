@@ -67,7 +67,7 @@ public class Chunk : MonoBehaviour
                         // Render face corresponding to this side of the block only if it is at the edge of the chunk or next to air (visible face)
                         if (nx < 0 || ny < 0 || nz < 0 || nx >= chunkSize.x || ny >= chunkSize.y || nz >= chunkSize.z || blocks[nx, ny, nz].type == Block.Type.Air)
                         {
-                            VoxelFaceGenerator.AddFace(meshData, pos, dir, block.textureOffset, atlasGridSize, atlasResolution);
+                            VoxelFaceGenerator.AddFace(meshData, block, dir, atlasGridSize, atlasResolution);
                         }
                     }
                 }
@@ -91,23 +91,30 @@ public class Chunk : MonoBehaviour
 
 public static class VoxelFaceGenerator
 {
-    static readonly Vector3[,] faceVertices = new Vector3[6, 4]
+    static readonly Vector3[,] faceVertices = new Vector3[,]
     {
-        { new Vector3(0,1,0), new Vector3(0,1,1), new Vector3(1,1,1), new Vector3(1,1,0) },
-        { new Vector3(0,0,0), new Vector3(1,0,0), new Vector3(1,0,1), new Vector3(0,0,1) },
-        { new Vector3(0,0,1), new Vector3(1,0,1), new Vector3(1,1,1), new Vector3(0,1,1) },
-        { new Vector3(1,0,0), new Vector3(0,0,0), new Vector3(0,1,0), new Vector3(1,1,0) },
-        { new Vector3(1,0,1), new Vector3(1,0,0), new Vector3(1,1,0), new Vector3(1,1,1) },
-        { new Vector3(0,0,0), new Vector3(0,0,1), new Vector3(0,1,1), new Vector3(0,1,0) }
+        { new Vector3(0,0,1), new Vector3(1,0,1), new Vector3(1,1,1), new Vector3(0,1,1) }, // forward
+        { new Vector3(1,0,1), new Vector3(1,0,0), new Vector3(1,1,0), new Vector3(1,1,1) }, // right
+        { new Vector3(1,0,0), new Vector3(0,0,0), new Vector3(0,1,0), new Vector3(1,1,0) }, // back
+        { new Vector3(0,0,0), new Vector3(0,0,1), new Vector3(0,1,1), new Vector3(0,1,0) }, // left
+        { new Vector3(0,1,0), new Vector3(0,1,1), new Vector3(1,1,1), new Vector3(1,1,0) }, // up
+        { new Vector3(0,0,0), new Vector3(1,0,0), new Vector3(1,0,1), new Vector3(0,0,1) }  // down
     };
 
-    public static void AddFace(MeshData meshData, Vector3 pos, Vector3Int normal, Vector2Int[] atlasOffsets, int atlasGridSize, int atlasResolution)
+    static int mod(int x, int m)
     {
+        return (x % m + m) % m;
+    }
+
+    public static void AddFace(MeshData meshData, Block block, Vector3Int normal, int atlasGridSize, int atlasResolution)
+    {
+        int realFaceIndex = GetFaceIndex(normal);
+        int projectedFaceIndex = block.orientation.ProjectFaceIndex(realFaceIndex);
+
         int index = meshData.vertices.Count;
-        int dir = GetFaceIndex(normal);
 
         for (int i = 0; i < 4; i++)
-            meshData.vertices.Add(pos + faceVertices[dir, i]);
+            meshData.vertices.Add(block.worldPos + faceVertices[realFaceIndex, i]);
 
         meshData.triangles.Add(index);
         meshData.triangles.Add(index + 1);
@@ -116,11 +123,17 @@ public static class VoxelFaceGenerator
         meshData.triangles.Add(index + 2);
         meshData.triangles.Add(index + 3);
 
-        Vector2[] faceUVs = GetUVs(atlasOffsets[dir], atlasGridSize, atlasResolution);
+        int rotations = 0;
+        if (realFaceIndex == 4)
+            rotations = mod(block.orientation.forwardIndex + 1, 4);
+        else if (realFaceIndex == 5)
+            rotations = mod(-block.orientation.forwardIndex, 4);
+
+        Vector2[] faceUVs = GetUVs(block.textureOffsets[projectedFaceIndex], rotations, atlasGridSize, atlasResolution);
         meshData.uvs.AddRange(faceUVs);
     }
 
-    private static Vector2[] GetUVs(Vector2Int atlasOffset, int atlasGridSize, int atlasResolution)
+    private static Vector2[] GetUVs(Vector2Int atlasOffset, int rotations, int atlasGridSize, int atlasResolution)
     {
         float padding = 2f / atlasResolution;
 
@@ -130,23 +143,29 @@ public static class VoxelFaceGenerator
         float xMin = atlasOffset.x * tileSize + padding;
         float yMin = atlasOffset.y * tileSize + padding;
 
-        return new Vector2[]
+        var standardUVs = new Vector2[]
         {
             new(xMin + paddedTileSize, yMin),
             new(xMin, yMin),
             new(xMin, yMin + paddedTileSize),
             new(xMin + paddedTileSize, yMin + paddedTileSize)
         };
+
+        var rotatedUVs = new Vector2[4];
+        for (int i = 0; i < 4; i++)
+            rotatedUVs[i] = standardUVs[(i + rotations) % 4];
+
+        return rotatedUVs;
     }
 
     private static int GetFaceIndex(Vector3Int normal)
     {
-        if (normal == Vector3Int.up) return 0;
-        if (normal == Vector3Int.down) return 1;
-        if (normal == Vector3Int.forward) return 2;
-        if (normal == Vector3Int.back) return 3;
-        if (normal == Vector3Int.right) return 4;
-        if (normal == Vector3Int.left) return 5;
+        if (normal == Vector3Int.forward) return 0;
+        if (normal == Vector3Int.right) return 1;
+        if (normal == Vector3Int.back) return 2;
+        if (normal == Vector3Int.left) return 3;
+        if (normal == Vector3Int.up) return 4;
+        if (normal == Vector3Int.down) return 5;
         return 0;
     }
 }

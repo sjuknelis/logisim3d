@@ -75,6 +75,10 @@ public class PlayerController : MonoBehaviour
             BreakBlock();
         if (Input.GetMouseButtonDown(1))
             PlaceBlock();
+        if (Input.GetKeyDown(KeyCode.R))
+            RotateBlock();
+        if (Input.GetKeyDown(KeyCode.F))
+            FlipBlock();
     }
 
     void FixedUpdate()
@@ -150,5 +154,62 @@ public class PlayerController : MonoBehaviour
             var worldPos = Vector3Int.FloorToInt(hit.point + hit.normal * 0.01f);
             world.PlaceBlock(worldPos, blockTypeToPlace);
         }
+    }
+
+    void RotateBlock()
+    {
+        if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out var hit, interactDistance))
+        {
+            // Minus normal so we are inside the hovered block
+            var worldPos = Vector3Int.FloorToInt(hit.point - hit.normal * 0.01f);
+            if (!world.GetBlock(worldPos, out var block, out var chunk)) return;
+            block.orientation.Rotate();
+            chunk.GenerateMesh();
+        }
+    }
+
+    void FlipBlock()
+    {
+        if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out var hit, interactDistance))
+        {
+            // Minus normal so we are inside the hovered block
+            var worldPos = Vector3Int.FloorToInt(hit.point - hit.normal * 0.01f);
+            if (!world.GetBlock(worldPos, out var block, out var chunk)) return;
+            block.orientation.Flip();
+            chunk.GenerateMesh();
+        }
+    }
+
+    private Vector3Int GetAxisVector(Vector3 vec)
+    {
+        float maxValue;
+        int maxValueIndex;
+
+        if (Mathf.Abs(vec.x) >= Mathf.Abs(vec.y))
+        {
+            maxValue = vec.x;
+            maxValueIndex = 0;
+        }
+        else
+        {
+            maxValue = vec.y;
+            maxValueIndex = 1;
+        }
+
+        if (Mathf.Abs(vec.z) > Mathf.Abs(maxValue))
+        {
+            maxValue = vec.z;
+            maxValueIndex = 2;
+        }
+
+        Vector3Int pos = new(0, 0, 0);
+        if (maxValueIndex == 0)
+            pos = new(1, 0, 0);
+        else if (maxValueIndex == 1)
+            pos = new(0, 1, 0);
+        else if (maxValueIndex == 2)
+            pos = new(0, 0, 1);
+
+        return pos * (int)Mathf.Sign(maxValue);
     }
 }

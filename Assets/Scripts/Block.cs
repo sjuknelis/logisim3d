@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 public class Block
@@ -10,14 +9,8 @@ public class Block
 
 	public Vector3Int worldPos;
 	public Type type;
-	public Vector2Int[] textureOffset;
-
-	static readonly Dictionary<Type, Vector2Int[]> defaultTextureOffsets = new()
-	{
-		{ Type.Stone, new Vector2Int[] { new(0, 0), new(1, 0), new(2, 0), new(3, 0), new(4, 0), new(5, 0) } },
-		{ Type.PowerSource, new Vector2Int[] { new(0, 1), new(0, 1), new(0, 1), new(0, 1), new(0, 1), new(0, 1) } },
-		{ Type.Wire, new Vector2Int[] { new(1, 1), new(1, 1), new(1, 1), new(1, 1), new(1, 1), new(1, 1) } }
-    };
+	public Vector2Int[] textureOffsets;
+	public BlockOrientation orientation = new();
 
 	public Block(Chunk chunk, Vector3Int worldPos, Type type)
 	{
@@ -31,6 +24,50 @@ public class Block
 		this.type = type;
 
 		if (type != Type.Air)
-			textureOffset = BlockProps.textureOffsets[BlockProps.names[type]];
+			textureOffsets = BlockProps.textureOffsets[BlockProps.names[type]];
+
+		orientation.Reset();
+	}
+}
+
+public class BlockOrientation
+{
+	public int upSign, forwardIndex;
+
+	public BlockOrientation()
+	{
+		Reset();
+	}
+
+	public void Reset()
+	{
+		upSign = 1;
+		forwardIndex = 0;
+	}
+
+	public int ProjectFaceIndex(int index)
+	{
+		if (index < 4)
+		{
+			return (index + forwardIndex) % 4;
+		}
+		else if (upSign == 1)
+		{
+			return index;
+		}
+		else
+		{
+			return 9 - index;
+		}
+	}
+
+	public void Rotate()
+	{
+		forwardIndex = (forwardIndex + 1) % 4;
+	}
+
+	public void Flip()
+	{
+		upSign = -upSign;
 	}
 }
