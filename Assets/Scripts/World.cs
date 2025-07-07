@@ -91,7 +91,7 @@ public class World : MonoBehaviour
         if (!GetBlock(worldPos, out var block, out var chunk)) return;
         block.Set(blockType);
         
-
+        // Powered blocks
         int[] deltax = { 0, 0, -1, 1, 0, 0 };
         int[] deltay = { 0, 0, 0, 0, 1, -1 };
         int[] deltaz = { -1, 1, 0, 0, 0, 0 };
@@ -114,7 +114,6 @@ public class World : MonoBehaviour
                     if (checking.type == Block.Type.Wire) {
                         checking.powered = true; 
                         checking.Set(checking.type); // move later
-                        Debug.Log(checking);
                         checking.sources.Add(block.worldPos);
                         rerender.Add(chunk2);
                         to_check.Enqueue(checking.worldPos);
@@ -141,9 +140,10 @@ public class World : MonoBehaviour
                 }
                 // when it propagates it needs to pass on all its sources
             }
+            // when i add a wire what if it only propagates to unpowered wires
+            // breaking/adding power source might be more costly
 
             if (block.powered) { // THIS ISN'T RIGHT YET (revisits where a wire got powered from)
-                Debug.Log("Yes");
                 foreach (Vector3Int src in block.sources) {
                     HashSet<Vector3Int> visited = new HashSet<Vector3Int>();
                     Queue<Vector3Int> to_check = new Queue<Vector3Int>();
@@ -159,7 +159,7 @@ public class World : MonoBehaviour
                             
                             if (checking.type == Block.Type.Wire) {
                                 checking.powered = true;
-                                checking.Set(checking.type); // move later
+                                // checking.Set(checking.type); // move later
                                 checking.sources.Add(src);
                                 Debug.Log(checking.sources);
                                 rerender.Add(chunk2);

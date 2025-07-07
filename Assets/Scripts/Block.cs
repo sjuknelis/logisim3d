@@ -12,7 +12,7 @@ public class Block
 	public Type type;
 	public Material material;
 	public bool powered;
-	public List<Vector3Int> sources = new List<Vector3Int>();
+	public HashSet<Vector3Int> sources = new HashSet<Vector3Int>();
 
 	public Block(Chunk chunk, Vector3Int worldPos, Type type)
 	{
@@ -30,7 +30,7 @@ public class Block
 			Debug.Log("I am changing the material");
 			material = BlockMaterialStore.materials["poweredwire"];
 		}
-		if (type != Type.Air)
+		else if (type != Type.Air)
 			material = BlockMaterialStore.defaultMaterials[type];
 	}
 }
