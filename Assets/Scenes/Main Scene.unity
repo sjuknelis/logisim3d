@@ -392,6 +392,7 @@ GameObject:
   - component: {fileID: 418735763}
   - component: {fileID: 418735768}
   - component: {fileID: 418735762}
+  - component: {fileID: 418735769}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -642,6 +643,25 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &418735769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 418735761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3396b0e3bcd9e4f16b16ad54d21d6836, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvas: {fileID: 1181025413}
+  panelPrefab: {fileID: 4762663070505377598, guid: 4beef278f565d42e59d571883783a91f, type: 3}
+  squareSizePx: 45
+  squareGapPx: 8
+  atlas: {fileID: 2800000, guid: 78cfb74a73c97437ba4d384277a05ce7, type: 3}
+  atlasGridSize: 8
+  atlasResolution: 256
 --- !u!1 &817769764
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,6 +16,8 @@ public class PlayerController : MonoBehaviour
     private Transform cameraPivot;
     private LineRenderer outline;
 
+    private Inventory inventory;
+
     private float verticalRotation = 0f;
     private bool grounded;
 
@@ -32,6 +34,8 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         cameraPivot = transform.Find("Camera Pivot");
         outline = GetComponent<LineRenderer>();
+
+        inventory = GetComponent<Inventory>();
 
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -148,11 +152,14 @@ public class PlayerController : MonoBehaviour
 
     void PlaceBlock()
     {
+        var selectedType = inventory.GetSelectedBlockType();
+        if (selectedType == Block.Type.Air) return;
+
         if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out RaycastHit hit, interactDistance))
         {
             // Plus normal so we are outside the hovered block
             var worldPos = Vector3Int.FloorToInt(hit.point + hit.normal * 0.01f);
-            world.PlaceBlock(worldPos, blockTypeToPlace);
+            world.PlaceBlock(worldPos, selectedType);
         }
     }
 
