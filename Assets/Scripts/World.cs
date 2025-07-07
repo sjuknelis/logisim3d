@@ -159,7 +159,7 @@ public class World : MonoBehaviour
                             
                             if (checking.type == Block.Type.Wire) {
                                 checking.powered = true;
-                                // checking.Set(checking.type); // move later
+                                checking.Set(checking.type); // move later
                                 checking.sources.Add(src);
                                 Debug.Log(checking.sources);
                                 rerender.Add(chunk2);
