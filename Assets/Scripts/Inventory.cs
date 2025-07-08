@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour
 {
-    public GameObject canvas, panelPrefab;
+    public GameObject canvas, panelPrefab, movingImageObj;
     public int squareSizePx, squareGapPx;
 
     public Texture2D atlas;
@@ -27,6 +27,8 @@ public class Inventory : MonoBehaviour
 
     private GameObject[] panels;
     private int selectedPanel = 0;
+
+    private Block.Type movingBlockType = Block.Type.Air;
 
     private Block.Type[] hotbarItems = new Block.Type[]
     {
@@ -62,7 +64,15 @@ public class Inventory : MonoBehaviour
             var imageObj = panels[i].transform.Find("Item Image");
             imageObj.GetComponent<RectTransform>().sizeDelta = new(squareSizePx - squareGapPx * 2, squareSizePx - squareGapPx * 2);
             imageObj.GetComponent<Image>().color = new(0f, 0f, 0f, 0f);
+
+            var imageButtonObj = imageObj.transform.Find("Button");
+            imageButtonObj.GetComponent<RectTransform>().sizeDelta = new(squareSizePx - squareGapPx * 2, squareSizePx - squareGapPx * 2);
+            int capI = i;
+            imageButtonObj.GetComponent<Button>().onClick.AddListener(() => OnItemClick(capI));
         }
+
+        movingImageObj.GetComponent<RectTransform>().sizeDelta = new(squareSizePx - squareGapPx * 2, squareSizePx - squareGapPx * 2);
+        movingImageObj.GetComponent<Image>().color = new(0f, 0f, 0f, 0f);
 
         UpdateSelected(0);
     }
@@ -74,7 +84,10 @@ public class Inventory : MonoBehaviour
             RepositionPanel(panel);
 
         for (int i = 0; i < hotbarItems.Length; i++)
-            SetPanelImage(panels[i], hotbarItems[i]);
+            SetImage(panels[i].transform.Find("Item Image").gameObject, hotbarItems[i]);
+
+        SetImage(movingImageObj, movingBlockType);
+        movingImageObj.GetComponent<RectTransform>().anchoredPosition = Input.mousePosition;
 
         for (int i = 0; i < hotbarCodes.Length; i++)
         {
@@ -91,9 +104,23 @@ public class Inventory : MonoBehaviour
         return hotbarItems[selectedPanel];
     }
 
-    void SetPanelImage(GameObject panel, Block.Type type)
+    void OnItemClick(int index)
     {
-        var image = panel.transform.Find("Item Image").GetComponent<Image>();
+        if (movingBlockType == Block.Type.Air)
+        {
+            movingBlockType = hotbarItems[index];
+            hotbarItems[index] = Block.Type.Air;
+        }
+        else
+        {
+            hotbarItems[index] = movingBlockType;
+            movingBlockType = Block.Type.Air;
+        }
+    }
+
+    void SetImage(GameObject imageObj, Block.Type type)
+    {
+        var image = imageObj.GetComponent<Image>();
 
         if (type == Block.Type.Air)
         {

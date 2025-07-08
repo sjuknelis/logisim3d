@@ -21,13 +21,7 @@ public class PlayerController : MonoBehaviour
     private float verticalRotation = 0f;
     private bool grounded;
 
-    private readonly Dictionary<KeyCode, Block.Type> blockTypes = new()
-    {
-        { KeyCode.Alpha1, Block.Type.Stone },
-        { KeyCode.Alpha2, Block.Type.PowerSource },
-        { KeyCode.Alpha3, Block.Type.Wire }
-    };
-    private Block.Type blockTypeToPlace = Block.Type.Stone;
+    private bool isMouseLocked = true;
 
     void Start()
     {
@@ -42,6 +36,15 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Open inventory
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            isMouseLocked = !isMouseLocked;
+            Cursor.lockState = isMouseLocked ? CursorLockMode.Locked : CursorLockMode.None;
+        }
+
+        if (!isMouseLocked) return;
+
         // Mouse look
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         transform.Rotate(0, mouseX, 0);
@@ -67,14 +70,7 @@ public class PlayerController : MonoBehaviour
             outline.positionCount = 0;
         }
 
-        // Select block type
-        foreach (var kvp in blockTypes)
-        {
-            if (Input.GetKeyDown(kvp.Key))
-                blockTypeToPlace = kvp.Value;
-        }
-
-        // Break and place
+        // Break, place, rotate, flip
         if (Input.GetMouseButtonDown(0))
             BreakBlock();
         if (Input.GetMouseButtonDown(1))
