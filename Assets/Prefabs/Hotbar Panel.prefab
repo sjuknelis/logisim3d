@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4189333687269966397}
   - component: {fileID: 3809582652633185449}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: Hotbar Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -12,9 +12,6 @@ public class Chunk : MonoBehaviour
     private MeshRenderer meshRenderer;
     private MeshCollider collider;
 
-    public Material atlasMaterial;
-    public int atlasGridSize, atlasResolution;
-
     void Start()
     {
         meshFilter = gameObject.AddComponent<MeshFilter>();
@@ -63,7 +60,7 @@ public class Chunk : MonoBehaviour
                             blocks[nextPos.x, nextPos.y, nextPos.z].type == Block.Type.Air
                             )
                         {
-                            VoxelFaceGenerator.AddFace(meshData, chunkPos, block, dir, atlasGridSize, atlasResolution);
+                            VoxelFaceGenerator.AddFace(meshData, chunkPos, block, dir);
                         }
                     }
                 }
@@ -78,7 +75,7 @@ public class Chunk : MonoBehaviour
         meshFilter.mesh = null;
         meshFilter.mesh = mesh;
 
-        meshRenderer.material = atlasMaterial;
+        meshRenderer.material = AtlasProvider.atlasMaterial;
 
         collider.sharedMesh = null;
         collider.sharedMesh = mesh;
@@ -97,7 +94,7 @@ static class VoxelFaceGenerator
         { new(0,0,0), new(1,0,0), new(1,0,1), new(0,0,1) }  // down
     };
 
-    public static void AddFace(MeshData meshData, Vector3Int chunkPos, Block block, Direction dir, int atlasGridSize, int atlasResolution)
+    public static void AddFace(MeshData meshData, Vector3Int chunkPos, Block block, Direction dir)
     {
         int worldFaceIndex = dir.GetFaceIndex();
         int blockFaceIndex = block.orientation.Project(dir).GetFaceIndex();
@@ -122,15 +119,15 @@ static class VoxelFaceGenerator
         else if (dir == Direction.Down)
             rotations = 4 - block.orientation.forwardIndex;
 
-        var faceUVs = GetUVs(block.textureOffsets[blockFaceIndex], rotations, atlasGridSize, atlasResolution);
+        var faceUVs = GetUVs(block.textureOffsets[blockFaceIndex], rotations);
         meshData.uvs.AddRange(faceUVs);
     }
 
-    static Vector2[] GetUVs(Vector2Int atlasOffset, int rotations, int atlasGridSize, int atlasResolution)
+    static Vector2[] GetUVs(Vector2Int atlasOffset, int rotations)
     {
-        float padding = 2f / atlasResolution;
+        float padding = 2f / AtlasProvider.atlasResolution;
 
-        float tileSize = 1f / atlasGridSize;
+        float tileSize = 1f / AtlasProvider.atlasGridSize;
         float paddedTileSize = tileSize - padding * 2;
 
         float xMin = atlasOffset.x * tileSize + padding;
