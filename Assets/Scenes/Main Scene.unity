@@ -119,6 +119,53 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &137848463
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 137848465}
+  - component: {fileID: 137848464}
+  m_Layer: 0
+  m_Name: Atlas Provider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &137848464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 137848463}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56d557047910f4b70b6b2a05ea8af290, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  atlasTextureP: {fileID: 2800000, guid: 78cfb74a73c97437ba4d384277a05ce7, type: 3}
+  atlasGridSizeP: 8
+  atlasResolutionP: 256
+--- !u!4 &137848465
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 137848463}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -392,7 +439,6 @@ GameObject:
   - component: {fileID: 418735763}
   - component: {fileID: 418735768}
   - component: {fileID: 418735762}
-  - component: {fileID: 418735769}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -413,6 +459,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   world: {fileID: 1138259018}
+  hotbar: {fileID: 1907954190}
   speed: 5
   jumpForce: 5
   mouseSensitivity: 8
@@ -643,26 +690,6 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
---- !u!114 &418735769
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 418735761}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3396b0e3bcd9e4f16b16ad54d21d6836, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  canvas: {fileID: 1181025413}
-  panelPrefab: {fileID: 4762663070505377598, guid: 4beef278f565d42e59d571883783a91f, type: 3}
-  movingImageObj: {fileID: 1229763469}
-  squareSizePx: 45
-  squareGapPx: 8
-  atlas: {fileID: 2800000, guid: 78cfb74a73c97437ba4d384277a05ce7, type: 3}
-  atlasGridSize: 8
-  atlasResolution: 256
 --- !u!1 &817769764
 GameObject:
   m_ObjectHideFlags: 0
@@ -963,6 +990,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1795010283}
+  - {fileID: 1907954189}
   - {fileID: 1229763470}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -981,6 +1009,19 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 231339012004184730, guid: e3ad40a94141b4e2bbb995f88c13bc7a, type: 3}
   m_PrefabInstance: {fileID: 1407312210}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1229763474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229763469}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef2804791db0149649b8bd88d6c35ad7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  imageSizePx: 30
 --- !u!1001 &1407312210
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1071,13 +1112,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2579398346916519105, guid: e3ad40a94141b4e2bbb995f88c13bc7a, type: 3}
       propertyPath: m_Name
-      value: Item Image
+      value: Moving Item
+      objectReference: {fileID: 0}
+    - target: {fileID: 8267764592484222936, guid: e3ad40a94141b4e2bbb995f88c13bc7a, type: 3}
+      propertyPath: useButton
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 3686694251693393733, guid: e3ad40a94141b4e2bbb995f88c13bc7a, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2579398346916519105, guid: e3ad40a94141b4e2bbb995f88c13bc7a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1229763474}
   m_SourcePrefab: {fileID: 100100000, guid: e3ad40a94141b4e2bbb995f88c13bc7a, type: 3}
 --- !u!1 &1795010282
 GameObject:
@@ -1154,12 +1202,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1795010282}
   m_CullTransparentMesh: 1
+--- !u!1 &1907954188
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1907954189}
+  - component: {fileID: 1907954190}
+  m_Layer: 0
+  m_Name: Hotbar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1907954189
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907954188}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1181025417}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1907954190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1907954188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3396b0e3bcd9e4f16b16ad54d21d6836, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panelPrefab: {fileID: 4762663070505377598, guid: 4beef278f565d42e59d571883783a91f, type: 3}
+  movingItemObj: {fileID: 1229763469}
+  panelSizePx: 40
+  itemImageSizePx: 30
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 410087041}
   - {fileID: 832575519}
+  - {fileID: 137848465}
   - {fileID: 1138259019}
   - {fileID: 418735767}
   - {fileID: 1181025417}

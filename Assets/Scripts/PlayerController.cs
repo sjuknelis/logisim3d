@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -6,6 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public World world;
+    public Hotbar hotbar;
 
     public float speed = 5f;
     public float jumpForce = 5f;
@@ -15,8 +15,6 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private Transform cameraPivot;
     private LineRenderer outline;
-
-    private Inventory inventory;
 
     private float verticalRotation = 0f;
     private bool grounded;
@@ -28,8 +26,6 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         cameraPivot = transform.Find("Camera Pivot");
         outline = GetComponent<LineRenderer>();
-
-        inventory = GetComponent<Inventory>();
 
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -148,7 +144,7 @@ public class PlayerController : MonoBehaviour
 
     void PlaceBlock()
     {
-        var selectedType = inventory.GetSelectedBlockType();
+        var selectedType = hotbar.GetSelectedBlockType();
         if (selectedType == Block.Type.Air) return;
 
         if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out RaycastHit hit, interactDistance))
