@@ -109,13 +109,11 @@ public class World : MonoBehaviour
                     if (!GetBlock(new(top.x+deltax[i], top.y+deltay[i], top.z+deltaz[i]), out var checking, out var chunk2)) continue;
                     if (visited.Contains(checking.worldPos)) continue; // only visit each one once
                     
-
                     if (checking.type == Block.Type.Wire) { // if it's a wire, remove block as a source
                         checking.sources.Remove(block.worldPos);
                         if (checking.sources.Count == 0) {
                             checking.powered = false; 
                             checking.Set(checking.type); // move later
-
                         }
                         rerender.Add(chunk2);
                         to_check.Enqueue(checking.worldPos); // visit neighbors of wire to see if any are wires and need source removed
@@ -131,74 +129,69 @@ public class World : MonoBehaviour
                 HashSet<Vector3Int> global_visited = new HashSet<Vector3Int>();
 
                 foreach (var (src, _) in block.sources) {
-                
-                    // HashSet<Vector3Int> visited = new HashSet<Vector3Int>();
                     Dictionary<Vector3Int, int> visited = new Dictionary<Vector3Int, int>();
                     Queue<Vector3Int> to_check = new Queue<Vector3Int>();
                     to_check.Enqueue(block.worldPos);
-                    visited.Add(block.worldPos, block.sources[src].Count - 1);
+                    visited.Add(block.worldPos, block.sources[src].Count); // why -1?
 
                     while (to_check.Count != 0) {
                         Vector3Int top = to_check.Dequeue();
 
                         for (int i = 0; i < 6; i++) {
-
                             if (!GetBlock(new(top.x+deltax[i], top.y+deltay[i], top.z+deltaz[i]), out var checking, out var chunk2)) continue;
-                            if (visited.ContainsKey(checking.worldPos)) continue;
-                            //  && visited[checking.worldPos] <= 0
-                            // this is wrong, i should only 
-                            // continue if im trying to go back to where i came from
-                            // maybe sources for wires should only be >1 if diff face
-                            // you will only get visited once for each num. sources you have? lol
+                            if (visited.ContainsKey(checking.worldPos) && visited[checking.worldPos] == 0) continue;
 
                             if (checking.type == Block.Type.Wire && checking.sources[src].Contains(top)) {
                                 checking.sources[src].Remove(top);
                                 if (checking.sources[src].Count == 0) {
                                     checking.sources.Remove(src);
                                 }
-                                // unpower bc it MIGHT become unpowered or maybe i should unpower even if one src is removed?
-                                // if (checking.sources.Count == 0) checking.powered = false;
+                                // unpower bc it MIGHT conceivably become unpowered
+                                // but if i set up that case and then it has an incorrect extra src listed... 
+                                // the extra src still needs to be removed
+                                // if(checking.sources.ContainsKey(src)) {
+                                //     Debug.Log(checking.worldPos);
+                                //     Debug.Log(checking.sources[src].Count);
+                                // } else Debug.Log(checking.worldPos);
                                 checking.powered = false;
                                 rerender.Add(chunk2);
                                 to_check.Enqueue(checking.worldPos);
-                                visited.Add(checking.worldPos, checking.sources.Count);
+                                if (visited.ContainsKey(checking.worldPos)) visited[checking.worldPos] = checking.sources.Count;
+                                else visited.Add(checking.worldPos, checking.sources.Count);
                                 global_visited.Add(checking.worldPos);
-                                
                             }
-                    }
-                }
-            }
-
-            foreach (var (src, _) in block.sources) {
-                // not readding right 
-                HashSet<Vector3Int> visited2 = new HashSet<Vector3Int>();
-            Queue<Vector3Int> to_check2 = new Queue<Vector3Int>();
-            to_check2.Enqueue(src);
-            visited2.Add(src);
-            
-            while (to_check2.Count != 0) {
-                Vector3Int top = to_check2.Dequeue();
-
-                for (int i = 0; i < 6; i++) {
-                    if (!GetBlock(new(top.x+deltax[i], top.y+deltay[i], top.z+deltaz[i]), out var checking, out var chunk2)) continue;
-                    if (visited2.Contains(checking.worldPos)) continue;
-                    
-
-                    if (checking.type == Block.Type.Wire && checking.worldPos != block.worldPos) {
-                        checking.powered = true; 
-                        // checking.Set(checking.type); // move later
-                        if (checking.sources.ContainsKey(src)) {
-                            checking.sources[src].Add(top);
-                        } else {
-                            checking.sources.Add(src, new HashSet<Vector3Int>{top});
                         }
-                        rerender.Add(chunk2);
-                        to_check2.Enqueue(checking.worldPos);
-                        visited2.Add(checking.worldPos);
-                        global_visited.Add(checking.worldPos);
                     }
                 }
-            }
+
+                foreach (var (src, _) in block.sources) {
+                    HashSet<Vector3Int> visited2 = new HashSet<Vector3Int>();
+                    Queue<Vector3Int> to_check2 = new Queue<Vector3Int>();
+                    to_check2.Enqueue(src);
+                    visited2.Add(src);
+                    
+                    while (to_check2.Count != 0) {
+                        Vector3Int top = to_check2.Dequeue();
+
+                        for (int i = 0; i < 6; i++) {
+                            if (!GetBlock(new(top.x+deltax[i], top.y+deltay[i], top.z+deltaz[i]), out var checking, out var chunk2)) continue;
+                            if (visited2.Contains(checking.worldPos)) continue;
+                            
+
+                            if (checking.type == Block.Type.Wire && checking.worldPos != block.worldPos) {
+                                checking.powered = true; 
+                                if (checking.sources.ContainsKey(src)) {
+                                    checking.sources[src].Add(top);
+                                } else {
+                                    checking.sources.Add(src, new HashSet<Vector3Int>{top});
+                                }
+                                rerender.Add(chunk2);
+                                to_check2.Enqueue(checking.worldPos);
+                                visited2.Add(checking.worldPos);
+                                global_visited.Add(checking.worldPos);
+                            }
+                        }
+                    }
                 }
                 // Set all visited blocks
                 foreach (var block_visited in global_visited) {
@@ -207,9 +200,7 @@ public class World : MonoBehaviour
                     }
                 }
             }
-
             block.sources.Clear();
-
 
         // case 3. adding a power source
         } else if (blockType == Block.Type.PowerSource) {
