@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 public class Block
 {
@@ -10,19 +11,23 @@ public class Block
 	public Type type;
 	public Vector2Int[] textureOffsets;
 	public BlockOrientation orientation = new();
+	public bool powered;
+	public Dictionary<Vector3Int, HashSet<Vector3Int>> sources = new Dictionary<Vector3Int, HashSet<Vector3Int>>();
 
 	public Block(Chunk chunk, Vector3Int worldPos, Type type)
 	{
 		this.chunk = chunk;
 		this.worldPos = worldPos;
+		this.powered = false;
 		Set(type);
 	}
 
 	public void Set(Type type)
 	{
 		this.type = type;
-
-		if (type != Type.Air)
+		if (type == Type.Wire && powered) {
+			textureOffsets = BlockProps.textureOffsets["poweredwire"];
+		} else if (type != Type.Air)
 			textureOffsets = BlockProps.textureOffsets[BlockProps.names[type]];
 
 		orientation.Reset();
