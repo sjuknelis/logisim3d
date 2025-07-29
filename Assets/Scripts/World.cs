@@ -148,11 +148,7 @@ public class World : MonoBehaviour
                                 }
                                 // unpower bc it MIGHT conceivably become unpowered
                                 // but if i set up that case and then it has an incorrect extra src listed... 
-                                // the extra src still needs to be removed
-                                // if(checking.sources.ContainsKey(src)) {
-                                //     Debug.Log(checking.worldPos);
-                                //     Debug.Log(checking.sources[src].Count);
-                                // } else Debug.Log(checking.worldPos);
+                                // the extra src still needs to be removed (which is why visited is a dictionary)
                                 checking.powered = false;
                                 rerender.Add(chunk2);
                                 to_check.Enqueue(checking.worldPos);
