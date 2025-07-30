@@ -142,7 +142,7 @@ public class World : MonoBehaviour
                             if (!GetBlock(new(top.x+deltax[i], top.y+deltay[i], top.z+deltaz[i]), out var checking, out var chunk2)) continue;
                             if (visited.ContainsKey(checking.worldPos) && visited[checking.worldPos] == 0) continue;
 
-                            if (checking.type == Block.Type.Wire && checking.sources[src].Contains(top)) {
+                            if (checking.type == Block.Type.Wire && checking.sources.ContainsKey(src) && checking.sources[src].Contains(top)) {
                                 checking.sources[src].Remove(top);
                                 if (checking.sources[src].Count == 0) checking.sources.Remove(src);
                                 
@@ -201,7 +201,7 @@ public class World : MonoBehaviour
             Queue<Vector3Int> to_check = new Queue<Vector3Int>();
             to_check.Enqueue(block.worldPos);
             visited.Add(block.worldPos);
-            
+
             while (to_check.Count != 0) {
                 Vector3Int top = to_check.Dequeue();
 
