@@ -26,7 +26,6 @@ public class Hotbar : MonoBehaviour
     private HotbarPanel[] panels;
     private int selectedPanelIndex = 0;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         var movingItem = movingItemObj.GetComponent<MovingItem>();
@@ -35,19 +34,16 @@ public class Hotbar : MonoBehaviour
         for (int i = 0; i < panelCount; i++)
         {
             panels[i] = Instantiate(panelPrefab, transform).GetComponent<HotbarPanel>();
-            panels[i].Init(
-                (int)((i - panels.Length / 2 + 0.5f) * panelSizePx),
+            panels[i].Init((int)((i - panels.Length / 2 + 0.5f) * panelSizePx),
                 defaultHotbarItems[i],
                 movingItem,
                 panelSizePx,
-                itemImageSizePx
-                );
+                itemImageSizePx);
         }
 
         UpdateSelectedPanel(0);
     }
 
-    // Update is called once per frame
     void Update()
     {
         for (int i = 0; i < hotbarCodes.Length; i++)
@@ -60,15 +56,15 @@ public class Hotbar : MonoBehaviour
         }
     }
 
-    public Block.Type GetSelectedBlockType()
+    public Block.Type selectedType
     {
-        return panels[selectedPanelIndex].GetItem();
+        get => panels[selectedPanelIndex].type;
     }
 
-    void UpdateSelectedPanel(int nextIndex)
+    private void UpdateSelectedPanel(int nextIndex)
     {
-        panels[selectedPanelIndex].SetSelected(false);
-        panels[nextIndex].SetSelected(true);
+        panels[selectedPanelIndex].selected = false;
+        panels[nextIndex].selected = true;
         selectedPanelIndex = nextIndex;
     }
 }

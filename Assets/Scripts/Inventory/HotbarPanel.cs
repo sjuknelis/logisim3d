@@ -9,15 +9,9 @@ public class HotbarPanel : MonoBehaviour
     private ItemImage image;
     private RectTransform rectTransform;
 
-    private Block.Type item;
+    private Block.Type _type;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    public void Init(int xPosPx, Block.Type defaultItem, MovingItem movingItem, int panelSizePx, int itemImageSizePx)
+    public void Init(int xPosPx, Block.Type defaultItemType, MovingItem movingItem, int panelSizePx, int itemImageSizePx)
     {
         this.movingItem = movingItem;
         this.panelSizePx = panelSizePx;
@@ -32,10 +26,9 @@ public class HotbarPanel : MonoBehaviour
         image = rectTransform.Find("Item Image").GetComponent<ItemImage>();
         image.Init(new(itemImageSizePx, itemImageSizePx), OnButtonClick);
 
-        SetItem(defaultItem);
+        type = defaultItemType;
     }
 
-    // Update is called once per frame
     void Update()
     {
         rectTransform.anchoredPosition = new(
@@ -44,34 +37,36 @@ public class HotbarPanel : MonoBehaviour
             );
     }
 
-    public void SetItem(Block.Type item)
+    public Block.Type type
     {
-        image.SetItem(item);
-        this.item = item;
-    }
-
-    public Block.Type GetItem()
-    {
-        return item;
-    }
-
-    public void SetSelected(bool isSelected)
-    {
-        Color color = isSelected ? new(1f, 0f, 0f, 0.5f) : new(1f, 1f, 1f, 0.5f);
-        GetComponent<Image>().color = color;
-    }
-
-    void OnButtonClick()
-    {
-        if (movingItem.GetItem() == Block.Type.Air)
+        get => _type;
+        private set
         {
-            movingItem.SetItem(item);
-            SetItem(Block.Type.Air);
+            _type = value;
+            image.type = value;
+        }
+    }
+
+    public bool selected
+    {
+        set
+        {
+            Color color = value ? new(1f, 0f, 0f, 0.5f) : new(1f, 1f, 1f, 0.5f);
+            GetComponent<Image>().color = color;
+        }
+    }
+
+    private void OnButtonClick()
+    {
+        if (movingItem.type == Block.Type.Air)
+        {
+            movingItem.type = type;
+            type = Block.Type.Air;
         }
         else
         {
-            SetItem(movingItem.GetItem());
-            movingItem.SetItem(Block.Type.Air);
+            type = movingItem.type;
+            movingItem.type = Block.Type.Air;
         }
     }
 }

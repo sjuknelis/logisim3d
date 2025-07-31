@@ -36,6 +36,8 @@ public class World : MonoBehaviour
             worldPos.y / Chunk.chunkSize.y,
             worldPos.z / Chunk.chunkSize.z
             );
+        print(worldPos);
+        print(index);
 
         if (InBounds(index))
         {

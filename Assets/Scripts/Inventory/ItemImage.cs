@@ -9,11 +9,6 @@ public class ItemImage : MonoBehaviour
 
     private Image imageComp;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
     public void Init(Vector2 size, Action onButtonClick)
     {
@@ -33,26 +28,23 @@ public class ItemImage : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    public Block.Type type
     {
-        
-    }
-
-    public void SetItem(Block.Type item)
-    {
-        if (item == Block.Type.Air)
+        set
         {
-            imageComp.color = new(0f, 0f, 0f, 0f);
-        }
-        else
-        {
-            var offset = BlockProps.textureOffsets[BlockProps.names[item]][Direction.Up.GetFaceIndex()];
-            var resolution = AtlasProvider.atlasResolution;
-            Rect rect = new(offset.x * resolution, offset.y * resolution, resolution, resolution);
-            var sprite = Sprite.Create(AtlasProvider.atlasTexture, rect, new(0.5f, 0.5f));
-            imageComp.sprite = sprite;
-            imageComp.color = new(1f, 1f, 1f, 1f);
+            if (value == Block.Type.Air)
+            {
+                imageComp.color = new(0f, 0f, 0f, 0f);
+            }
+            else
+            {
+                var offset = BlockProps.textureOffsets[BlockProps.names[value]][Direction.Up.GetFaceIndex()];
+                var resolution = AtlasProvider.atlasResolution;
+                Rect rect = new(offset.x * resolution, offset.y * resolution, resolution, resolution);
+                var sprite = Sprite.Create(AtlasProvider.atlasTexture, rect, new(0.5f, 0.5f));
+                imageComp.sprite = sprite;
+                imageComp.color = new(1f, 1f, 1f, 1f);
+            }
         }
     }
 }
