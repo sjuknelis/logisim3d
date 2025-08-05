@@ -58,15 +58,6 @@ public class HotbarPanel : MonoBehaviour
 
     private void OnButtonClick()
     {
-        if (movingItem.type == Block.Type.Air)
-        {
-            movingItem.type = type;
-            type = Block.Type.Air;
-        }
-        else
-        {
-            type = movingItem.type;
-            movingItem.type = Block.Type.Air;
-        }
+        (type, movingItem.type) = (movingItem.type, type);
     }
 }
