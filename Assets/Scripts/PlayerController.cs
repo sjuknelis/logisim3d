@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     public World world;
     public Hotbar hotbar;
+    public Inventory inventory;
 
     public float speed = 5f;
     public float jumpForce = 5f;
@@ -18,8 +19,6 @@ public class PlayerController : MonoBehaviour
 
     private float verticalRotation = 0f;
     private bool grounded;
-
-    private bool isMouseLocked = true;
 
     void Start()
     {
@@ -35,11 +34,12 @@ public class PlayerController : MonoBehaviour
         // Open inventory
         if (Input.GetKeyDown(KeyCode.E))
         {
-            isMouseLocked = !isMouseLocked;
-            Cursor.lockState = isMouseLocked ? CursorLockMode.Locked : CursorLockMode.None;
+            inventory.open = !inventory.open;
+            Cursor.lockState = inventory.open ? CursorLockMode.None : CursorLockMode.Locked;
+            Time.timeScale = inventory.open ? 0f : 1f;
         }
 
-        if (!isMouseLocked) return;
+        if (inventory.open) return;
 
         // Mouse look
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
@@ -79,6 +79,8 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (inventory.open) return;
+
         // Movement
         var h = Input.GetAxis("Horizontal");
         var v = Input.GetAxis("Vertical");
