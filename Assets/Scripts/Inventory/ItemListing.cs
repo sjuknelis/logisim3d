@@ -1,22 +1,46 @@
+using TMPro;
 using UnityEngine;
 
 public class ItemListing : MonoBehaviour
 {
-    public MovingItem movingItem;
     public int panelSizePx;
 
-    private Block.Type type = Block.Type.PowerSource;
+    private ItemImage image;
+    private MovingItem movingItem;
+    private Block.Type _type;
 
     void Start()
     {
-        var image = transform.Find("Item Image").GetComponent<ItemImage>();
+        
+    }
+
+    public void Init(MovingItem movingItem, Block.Type type, string visualName, int index)
+    {
+        image = transform.Find("Item Image").GetComponent<ItemImage>();
         image.Init(new Vector2(30, 30), OnButtonClick);
-        image.type = type;
+
+        this.movingItem = movingItem;
+        this.type = type;
+
+        transform.Find("Text").GetComponent<TMP_Text>().text = visualName;
+
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        rectTransform.anchoredPosition = new(rectTransform.sizeDelta.x / 2, -(index + 0.5f) * rectTransform.sizeDelta.y);
     }
 
     void Update()
     {
 
+    }
+
+    public Block.Type type
+    {
+        get => _type;
+        set
+        {
+            _type = value;
+            image.type = value;
+        }
     }
     
     private void OnButtonClick()
