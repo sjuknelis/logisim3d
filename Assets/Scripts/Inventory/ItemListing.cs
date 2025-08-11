@@ -1,5 +1,9 @@
+using System;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 public class ItemListing : MonoBehaviour
 {
@@ -11,13 +15,13 @@ public class ItemListing : MonoBehaviour
 
     void Start()
     {
-        
+
     }
 
-    public void Init(MovingItem movingItem, Block.Type type, string visualName, int index)
+    public void Init(MovingItem movingItem, Block.Type type, string visualName, int index, Action onListingButtonClick)
     {
         image = transform.Find("Item Image").GetComponent<ItemImage>();
-        image.Init(new Vector2(30, 30), OnButtonClick);
+        image.Init(new Vector2(30, 30), OnItemButtonClick);
 
         this.movingItem = movingItem;
         this.type = type;
@@ -26,6 +30,9 @@ public class ItemListing : MonoBehaviour
 
         RectTransform rectTransform = GetComponent<RectTransform>();
         rectTransform.anchoredPosition = new(rectTransform.sizeDelta.x / 2, -(index + 0.5f) * rectTransform.sizeDelta.y);
+
+        UnityAction listingAction = new(onListingButtonClick);
+        transform.Find("Button").GetComponent<Button>().onClick.AddListener(listingAction);
     }
 
     void Update()
@@ -42,8 +49,8 @@ public class ItemListing : MonoBehaviour
             image.type = value;
         }
     }
-    
-    private void OnButtonClick()
+
+    private void OnItemButtonClick()
     {
         movingItem.type = type;
     }

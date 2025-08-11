@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
@@ -13,7 +14,9 @@ public class Inventory : MonoBehaviour
     };
 
     private CanvasGroup canvasGroup;
+    private TMP_Text descriptionText;
     private bool _open;
+    private int selectedListingIndex = 0;
 
     void Start()
     {
@@ -22,15 +25,18 @@ public class Inventory : MonoBehaviour
 
         for (int i = 0; i < typeEntries.Length; i++)
         {
-            var (type, visualName, description) = typeEntries[i];
+            var (type, visualName, _) = typeEntries[i];
             var itemListing = Instantiate(itemListingPrefab, transform);
-            itemListing.GetComponent<ItemListing>().Init(movingItem, type, visualName, i);
+            var capturedI = i;
+            itemListing.GetComponent<ItemListing>().Init(movingItem, type, visualName, i, () => selectedListingIndex = capturedI);
         }
+
+        descriptionText = transform.Find("Description").GetComponent<TMP_Text>();
     }
 
     void Update()
     {
-
+        descriptionText.text = typeEntries[selectedListingIndex].description;
     }
     
     public bool open
