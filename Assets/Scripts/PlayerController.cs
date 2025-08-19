@@ -8,21 +8,16 @@ public class PlayerController : MonoBehaviour
     public Hotbar hotbar;
     public Inventory inventory;
 
-    public float speed = 5f;
-    public float jumpForce = 5f;
     public float mouseSensitivity = 8f;
     public float interactDistance = 5f;
 
-    private Rigidbody rb;
     private Transform cameraPivot;
     private LineRenderer outline;
 
     private float verticalRotation = 0f;
-    private bool grounded;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
         cameraPivot = transform.Find("Camera Pivot");
         outline = GetComponent<LineRenderer>();
 
@@ -49,12 +44,6 @@ public class PlayerController : MonoBehaviour
         verticalRotation = Mathf.Clamp(verticalRotation + mouseY, -90f, 90f);
         cameraPivot.localEulerAngles = new(verticalRotation, 0, 0);
 
-        // Jump
-        if (Input.GetButtonDown("Jump") && grounded)
-        {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        }
-
         // Outline around hovered block
         if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out var hit, interactDistance))
         {
@@ -75,20 +64,6 @@ public class PlayerController : MonoBehaviour
         {
             outline.positionCount = 0;
         }
-    }
-
-    void FixedUpdate()
-    {
-        if (inventory.open) return;
-
-        // Movement
-        var h = Input.GetAxis("Horizontal");
-        var v = Input.GetAxis("Vertical");
-
-        var move = transform.forward * v + transform.right * h;
-        var velocity = move * speed;
-        velocity.y = rb.linearVelocity.y;
-        rb.linearVelocity = velocity;
     }
 
     private void DrawOutline(Vector3Int pos)
@@ -114,24 +89,6 @@ public class PlayerController : MonoBehaviour
 
         outline.positionCount = points.Length;
         outline.SetPositions(points);
-    }
-
-    void OnCollisionStay(Collision collision)
-    {
-        foreach (var contact in collision.contacts)
-        {
-            if (Vector3.Dot(contact.normal, Vector3.up) > 0.5f)
-            {
-                grounded = true;
-                return;
-            }
-        }
-        grounded = false;
-    }
-
-    void OnCollisionExit(Collision collision)
-    {
-        grounded = false;
     }
 
     private void BreakBlock(RaycastHit hit)
