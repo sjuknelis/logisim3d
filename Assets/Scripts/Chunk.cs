@@ -75,7 +75,7 @@ public class Chunk : MonoBehaviour
         meshFilter.mesh = null;
         meshFilter.mesh = mesh;
 
-        meshRenderer.material = AtlasProvider.atlasMaterial;
+        meshRenderer.material = AtlasProvider.material;
 
         collider.sharedMesh = null;
         collider.sharedMesh = mesh;
@@ -125,9 +125,9 @@ static class VoxelFaceGenerator
 
     static Vector2[] GetUVs(Vector2Int atlasOffset, int rotations)
     {
-        float padding = 2f / AtlasProvider.atlasResolution;
+        float padding = 2f / AtlasProvider.tileSizePx;
 
-        float tileSize = 1f / AtlasProvider.atlasGridSize;
+        float tileSize = 1f / (AtlasProvider.texture.width / AtlasProvider.tileSizePx);
         float paddedTileSize = tileSize - padding * 2;
 
         float xMin = atlasOffset.x * tileSize + padding;

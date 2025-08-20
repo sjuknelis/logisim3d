@@ -39,9 +39,9 @@ public class ItemImage : MonoBehaviour
             else
             {
                 var offset = BlockProps.textureOffsets[BlockProps.names[value]][Direction.Up.GetFaceIndex()];
-                var resolution = AtlasProvider.atlasResolution;
-                Rect rect = new(offset.x * resolution, offset.y * resolution, resolution, resolution);
-                var sprite = Sprite.Create(AtlasProvider.atlasTexture, rect, new(0.5f, 0.5f));
+                var tileSize = AtlasProvider.tileSizePx;
+                Rect rect = new(offset.x * tileSize, offset.y * tileSize, tileSize, tileSize);
+                var sprite = Sprite.Create(AtlasProvider.texture, rect, new(0.5f, 0.5f));
                 imageComp.sprite = sprite;
                 imageComp.color = new(1f, 1f, 1f, 1f);
             }

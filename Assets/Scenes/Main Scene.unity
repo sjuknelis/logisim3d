@@ -148,9 +148,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56d557047910f4b70b6b2a05ea8af290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  atlasTextureP: {fileID: 2800000, guid: 78cfb74a73c97437ba4d384277a05ce7, type: 3}
-  atlasGridSizeP: 8
-  atlasResolutionP: 256
+  imagePath: Assets/textures.png
+  tileSizePxP: 512
 --- !u!4 &137848465
 Transform:
   m_ObjectHideFlags: 0
@@ -439,6 +438,7 @@ GameObject:
   - component: {fileID: 418735763}
   - component: {fileID: 418735768}
   - component: {fileID: 418735762}
+  - component: {fileID: 418735769}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -461,8 +461,6 @@ MonoBehaviour:
   world: {fileID: 1138259018}
   hotbar: {fileID: 1907954190}
   inventory: {fileID: 592144940}
-  speed: 5
-  jumpForce: 5
   mouseSensitivity: 8
   interactDistance: 5
 --- !u!54 &418735763
@@ -487,7 +485,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 1
+  m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 1
   m_Constraints: 112
@@ -691,6 +689,25 @@ LineRenderer:
   m_UseWorldSpace: 1
   m_Loop: 0
   m_ApplyActiveColorSpace: 1
+--- !u!114 &418735769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 418735761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13f438881543241f391f98864d22cebc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walkSpeed: 5
+  jumpSpeed: 5
+  flySpeed: 5
+  friction: 20
+  flyResistance: 10
+  gravity: 10
+  doubleJumpSecs: 0.3
 --- !u!1 &592144936
 GameObject:
   m_ObjectHideFlags: 0

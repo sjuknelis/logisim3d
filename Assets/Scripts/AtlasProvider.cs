@@ -1,23 +1,26 @@
+using System.IO;
 using UnityEngine;
 
 public class AtlasProvider : MonoBehaviour
 {
-    public static Texture2D atlasTexture;
-    public static int atlasGridSize, atlasResolution;
-    public static Material atlasMaterial;
+    public static Texture2D texture;
+    public static Material material;
+    public static int tileSizePx;
 
-    public Texture2D atlasTextureP;
-    public int atlasGridSizeP, atlasResolutionP;
+    public string imagePath;
+    public int tileSizePxP;
 
     void Awake()
     {
-        atlasTexture = atlasTextureP;
-        atlasGridSize = atlasGridSizeP;
-        atlasResolution = atlasResolutionP;
+        tileSizePx = tileSizePxP;
 
-        atlasMaterial = new(Shader.Find("Unlit/Texture"))
+        byte[] atlasBytes = File.ReadAllBytes(imagePath);
+        texture = new(2, 2);
+        texture.LoadImage(atlasBytes);
+
+        material = new(Shader.Find("Unlit/Texture"))
         {
-            mainTexture = atlasTexture
+            mainTexture = texture
         };
     }
 }
