@@ -31,6 +31,12 @@ public class World : MonoBehaviour
 
     public bool GetChunk(Vector3Int worldPos, out Chunk chunk)
     {
+        if (worldPos.x < 0 || worldPos.y < 0 || worldPos.z < 0)
+        {
+            chunk = null;
+            return false;
+        }
+
         Vector3Int index = new(
             worldPos.x / Chunk.chunkSize.x,
             worldPos.y / Chunk.chunkSize.y,
