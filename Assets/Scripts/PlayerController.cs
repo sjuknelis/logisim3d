@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -6,30 +5,19 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public World world;
+    public Hotbar hotbar;
+    public Inventory inventory;
 
-    public float speed = 5f;
-    public float jumpForce = 5f;
     public float mouseSensitivity = 8f;
     public float interactDistance = 5f;
 
-    private Rigidbody rb;
     private Transform cameraPivot;
     private LineRenderer outline;
 
     private float verticalRotation = 0f;
-    private bool grounded;
-
-    private readonly Dictionary<KeyCode, Block.Type> blockTypes = new()
-    {
-        { KeyCode.Alpha1, Block.Type.Stone },
-        { KeyCode.Alpha2, Block.Type.PowerSource },
-        { KeyCode.Alpha3, Block.Type.Wire }
-    };
-    private Block.Type blockTypeToPlace = Block.Type.Stone;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
         cameraPivot = transform.Find("Camera Pivot");
         outline = GetComponent<LineRenderer>();
 
@@ -38,6 +26,16 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Open inventory
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            inventory.open = !inventory.open;
+            Cursor.lockState = inventory.open ? CursorLockMode.None : CursorLockMode.Locked;
+            Time.timeScale = inventory.open ? 0f : 1f;
+        }
+
+        if (inventory.open) return;
+
         // Mouse look
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         transform.Rotate(0, mouseX, 0);
@@ -46,50 +44,29 @@ public class PlayerController : MonoBehaviour
         verticalRotation = Mathf.Clamp(verticalRotation + mouseY, -90f, 90f);
         cameraPivot.localEulerAngles = new(verticalRotation, 0, 0);
 
-        // Jump
-        if (Input.GetButtonDown("Jump") && grounded)
-        {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        }
-
         // Outline around hovered block
-        if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out RaycastHit hit, interactDistance))
+        if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out var hit, interactDistance))
         {
             Vector3Int hoveredPos = Vector3Int.FloorToInt(hit.point - hit.normal * 0.01f);
             DrawOutline(hoveredPos);
+
+            // Break, place, rotate, flip - only if there is a hovered block
+            if (Input.GetMouseButtonDown(0))
+                BreakBlock(hit);
+            if (Input.GetMouseButtonDown(1))
+                PlaceBlock(hit);
+            if (Input.GetKeyDown(KeyCode.R))
+                RotateBlock(hit);
+            if (Input.GetKeyDown(KeyCode.F))
+                FlipBlock(hit);
         }
         else
         {
             outline.positionCount = 0;
         }
-
-        // Select block type
-        foreach (var kvp in blockTypes)
-        {
-            if (Input.GetKeyDown(kvp.Key))
-                blockTypeToPlace = kvp.Value;
-        }
-
-        // Break and place
-        if (Input.GetMouseButtonDown(0))
-            BreakBlock();
-        if (Input.GetMouseButtonDown(1))
-            PlaceBlock();
     }
 
-    void FixedUpdate()
-    {
-        // Movement
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
-
-        Vector3 move = transform.forward * v + transform.right * h;
-        Vector3 velocity = move * speed;
-        velocity.y = rb.linearVelocity.y;
-        rb.linearVelocity = velocity;
-    }
-
-    void DrawOutline(Vector3Int pos)
+    private void DrawOutline(Vector3Int pos)
     {
         Vector3[] corners = new Vector3[8]
         {
@@ -114,41 +91,37 @@ public class PlayerController : MonoBehaviour
         outline.SetPositions(points);
     }
 
-    void OnCollisionStay(Collision collision)
+    private void BreakBlock(RaycastHit hit)
     {
-        foreach (ContactPoint contact in collision.contacts)
-        {
-            if (Vector3.Dot(contact.normal, Vector3.up) > 0.5f)
-            {
-                grounded = true;
-                return;
-            }
-        }
-        grounded = false;
+        // Minus normal so we are inside the hovered block
+        var worldPos = Vector3Int.FloorToInt(hit.point - hit.normal * 0.01f);
+        world.PlaceBlock(worldPos, Block.Type.Air);
     }
 
-    void OnCollisionExit(Collision collision)
+    void PlaceBlock(RaycastHit hit)
     {
-        grounded = false;
+        if (hotbar.selectedType == Block.Type.Air) return;
+
+        // Plus normal so we are outside the hovered block
+        var worldPos = Vector3Int.FloorToInt(hit.point + hit.normal * 0.01f);
+        world.PlaceBlock(worldPos, hotbar.selectedType);
     }
 
-    void BreakBlock()
+    void RotateBlock(RaycastHit hit)
     {
-        if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out RaycastHit hit, interactDistance))
-        {
-            // Minus normal so we are inside the hovered block
-            var worldPos = Vector3Int.FloorToInt(hit.point - hit.normal * 0.01f);
-            world.PlaceBlock(worldPos, Block.Type.Air);
-        }
+        // Minus normal so we are inside the hovered block
+        var worldPos = Vector3Int.FloorToInt(hit.point - hit.normal * 0.01f);
+        if (!world.GetBlock(worldPos, out var block, out var chunk)) return;
+        block.orientation.Rotate();
+        chunk.GenerateMesh();
     }
 
-    void PlaceBlock()
+    void FlipBlock(RaycastHit hit)
     {
-        if (Physics.Raycast(cameraPivot.position, cameraPivot.forward, out RaycastHit hit, interactDistance))
-        {
-            // Plus normal so we are outside the hovered block
-            var worldPos = Vector3Int.FloorToInt(hit.point + hit.normal * 0.01f);
-            world.PlaceBlock(worldPos, blockTypeToPlace);
-        }
+        // Minus normal so we are inside the hovered block
+        var worldPos = Vector3Int.FloorToInt(hit.point - hit.normal * 0.01f);
+        if (!world.GetBlock(worldPos, out var block, out var chunk)) return;
+        block.orientation.Flip();
+        chunk.GenerateMesh();
     }
 }
